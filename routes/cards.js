@@ -1,23 +1,22 @@
 const router = require('express').Router();
-const User = require('../models/user');
+const Card = require('../models/card');
 
 router.get('/', (req, res) => {
-  User.find({})
-    .then(users => res.send({ data: users }))
+  Card.find({})
+    .then(cards => res.send({ data: cards }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
 });
 
-router.get('/:userId', (req, res) => {
-  User.findById(req.params.userId)
-    .then(user => res.send({ data: user }))
+router.get('/:cardId', (req, res) => {
+  Card.findById(req.params.cardId)
+    .then(card => res.send({ data: card }))
     .catch(err => res.status(500).send({ message: 'Произошла ошибка' }));
 });
 
 router.post('/', (req, res) => {
-  console.log(req.body);
-  const { name, about, avatar} = req.body;
-  User.create({ name, about, avatar })
-    .then(user => res.send({ data: user }))
+  const { name, link} = req.body;
+  Card.create({ name, link, owner:req.user._id })
+    .then(card => res.send({ data: card }))
     .catch((err) => res.status(500).send({ message: err.message }));
 });
 
