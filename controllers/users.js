@@ -6,7 +6,7 @@ const ERROR_VALIDATION = 400;
 const getUsers = (req, res) => {
     User.find({})
         .then(users => {
-            if (!users)
+            if (users.length < 1)
                 res.status(ERROR_NOT_FOUND).send({ message: 'Пользователи не найдены' });
             else
                 res.send({ data: users });
@@ -15,12 +15,12 @@ const getUsers = (req, res) => {
 };
 
 const getUser = (req, res) => {
-    if (req.params.userId.match(/^[0-9a-fA-F]{24}$/))
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдены' });
+    if (!req.params.userId.match(/^[0-9a-fA-F]{24}$/))
+        return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
     User.findById(req.params.userId)
         .then(user => {
             if (!user)
-                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найдены' });
+                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
             else
                 res.send({ data: user });
         })
@@ -34,35 +34,41 @@ const createUser = (req, res) => {
         .catch((err) => {
             if (err.name === 'ValidationError')
                 res.status(ERROR_VALIDATION).send({ message: err.message })
-            else 
+            else
                 res.status(ERROR_CODE).send({ message: err.name })
         });
 };
 
 const updateUser = (req, res) => {
-    if (req.params.userId.match(/^[0-9a-fA-F]{24}$/))
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдены' });
     const { name, about } = req.body;
-    User.findByIdAndUpdate(req.user._id, { name, about })
-        .then(user => res.send({ data: user }))
+    User.findByIdAndUpdate(req.user._id, { name, about },{new: true})
+        .then(user => {
+            if (!user)
+                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+            else
+                res.send({ data: user });
+        })
         .catch((err) => {
             if (err.name === 'ValidationError')
                 res.status(ERROR_VALIDATION).send({ message: err.message })
-            else 
+            else
                 res.status(ERROR_CODE).send({ message: err.name })
         });
 };
 
 const updateAvatar = (req, res) => {
-    if (req.params.userId.match(/^[0-9a-fA-F]{24}$/))
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Карточка не найдены' });
     const { avatar } = req.body;
-    User.findByIdAndUpdate(req.user._id, { avatar })
-        .then(user => res.send({ data: user }))
+    User.findByIdAndUpdate(req.user._id, { avatar }, {new: true})
+        .then(user => {
+            if (!user)
+                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+            else
+                res.send({ data: user });
+        })
         .catch((err) => {
             if (err.name === 'ValidationError')
                 res.status(ERROR_VALIDATION).send({ message: err.message })
-            else 
+            else
                 res.status(ERROR_CODE).send({ message: err.name })
         });
 };
