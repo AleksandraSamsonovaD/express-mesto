@@ -1,77 +1,133 @@
 const User = require('../models/user');
-const ERROR_CODE = 500;
-const ERROR_NOT_FOUND = 404;
-const ERROR_VALIDATION = 400;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'f83b7547452099462061734791da57443cc60828de7dcb8f7494eedceb3c889c';
 
-const getUsers = (req, res) => {
+const IncorrectDataError = require('../errors/incorrect-data-err');
+const IncorrectAuthError = require('../errors/incorrect-auth-err');
+const NotFoundError = require('../errors/not-found-err');
+const EmailExistsError = require('../errors/email-exists-err');
+const DefaultError = require('../errors/default-err');
+
+const getUsers = (req, res, next) => {
     User.find({})
         .then(users => {
             if (users.length < 1)
-                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователи не найдены' });
+                throw new NotFoundError('Пользователи не найдены');
             else
                 res.send({ data: users });
         })
-        .catch((err) => res.status(ERROR_CODE).send({ message: err.message }));
+        .catch(next);;
 };
 
-const getUser = (req, res) => {
-    if (!req.params.userId.match(/^[0-9a-fA-F]{24}$/))
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+const getUser = (req, res, next) => {
+
     User.findById(req.params.userId)
         .then(user => {
             if (!user)
-                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+                throw new NotFoundError('Пользователь не найдены');
             else
                 res.send({ data: user });
         })
-        .catch(err => res.status(ERROR_CODE).send({ message: err.message }));
+        .catch(next);
 };
 
-const createUser = (req, res) => {
-    const { name, about, avatar } = req.body;
-    User.create({ name, about, avatar })
+const getUserAuth = (req, res, next) => {
+    User.findById(req.user.userId)
+        .then(user => {
+            if (!user)
+                throw new NotFoundError('Пользователь не найдены');
+            else
+                res.send({ data: user });
+        })
+        .catch(next);
+};
+
+const createUser = (req, res, next) => {
+    const { email, password, name, about, avatar } = req.body;
+    User.findOne({ email })
+        .then(user => {
+            if (user)
+                throw new EmailExistsError('Пользователь с данной почтой уже существует');
+        })
+    bcrypt.hash(password, 10)
+        .then((hash) => User.create({
+            email: email,
+            password: hash,
+        }))
         .then(user => res.send({ data: user }))
         .catch((err) => {
-            if (err.name === 'ValidationError')
-                res.status(ERROR_VALIDATION).send({ message: err.message })
-            else
-                res.status(ERROR_CODE).send({ message: err.name })
+            if (err.name === 'ValidationError'){
+                const errValid =  new IncorrectDataError(err.message);
+                next(errValid);
+            }
+            else if (err.name === 'EmailExistsError')
+                next(err);
+            else{
+                const errDef = new DefaultError(err.message);
+                next(errDef);
+            }
         });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
     const { name, about } = req.body;
-    User.findByIdAndUpdate(req.user._id, { name, about },{new: true})
+    User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
         .then(user => {
             if (!user)
-                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+                throw new NotFoundError('Пользователи не найдены');
             else
                 res.send({ data: user });
         })
         .catch((err) => {
-            if (err.name === 'ValidationError')
-                res.status(ERROR_VALIDATION).send({ message: err.message })
-            else
-                res.status(ERROR_CODE).send({ message: err.name })
+            if (err.name === 'ValidationError'){
+                const errValid =  new IncorrectDataError(err.message);
+                next(errValid);
+            }
+            else if (err.name === 'NotFoundError')
+                next(err);
+            else{
+                const errDef = new DefaultError(err.message);
+                next(errDef);
+            }
         });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
     const { avatar } = req.body;
-    User.findByIdAndUpdate(req.user._id, { avatar }, {new: true})
+    User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
         .then(user => {
             if (!user)
-                res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+                throw new NotFoundError('Пользователь не найден');
             else
                 res.send({ data: user });
         })
         .catch((err) => {
-            if (err.name === 'ValidationError')
-                res.status(ERROR_VALIDATION).send({ message: err.message })
-            else
-                res.status(ERROR_CODE).send({ message: err.name })
+            if (err.name === 'ValidationError'){
+                const errValid =  new IncorrectDataError(err.message);
+                next(errValid);
+            }
+            else if (err.name === 'NotFoundError')
+                next(err);
+            else{
+                const errDef = new DefaultError(err.message);
+                next(errDef);
+            }
         });
 };
 
-module.exports = { getUsers, getUser, createUser, updateUser, updateAvatar };
+const login = (req, res, next) => {
+    const { email, password } = req.body;
+    if (!email || !password)
+        throw new IncorrectAuthError('Нет пароля или почты');
+    return User.findUserByCredentials(email, password)
+        .then((user) => {
+            res.send({
+                token: jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
+            });
+        })
+        .catch(next);
+};
+
+module.exports = { getUsers, getUser, createUser, updateUser, updateAvatar, login, getUserAuth };
 
