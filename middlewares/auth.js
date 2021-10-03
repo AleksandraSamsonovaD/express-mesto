@@ -3,9 +3,7 @@ const IncorrectAuthError = require('../errors/incorrect-auth-err');
 
 const JWT_SECRET = 'f83b7547452099462061734791da57443cc60828de7dcb8f7494eedceb3c889c';
 
-const extractBearerToken = (header) => {
-  return header.replace('Bearer ', '');
-};
+const extractBearerToken = (header) => header.replace('Bearer ', '');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
@@ -24,7 +22,6 @@ module.exports = (req, res, next) => {
     const errAuth = new IncorrectAuthError('Необходима авторизация');
     next(errAuth);
   }
-
   req.user = payload; // записываем пейлоуд в объект запроса
 
   next(); // пропускаем запрос дальше

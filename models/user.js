@@ -1,5 +1,7 @@
+/* eslint-disable func-names */
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
+const isUrl = require('validator/lib/isURL');
 const bcrypt = require('bcryptjs');
 const IncorrectAuthError = require('../errors/incorrect-auth-err');
 
@@ -16,31 +18,36 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    select: false
+    select: false,
   },
-  name : {
+  name: {
     type: String,
     minlength: 2,
-    maxlength: 30
+    maxlength: 30,
+    default: 'Жак-Ив Кусто',
   },
-  about  : {
+  about: {
     type: String,
     minlength: 2,
-    maxlength: 30
+    maxlength: 30,
+    default: 'Исследователь',
   },
-  avatar : {
-    type: String
-  }
+  avatar: {
+    type: String,
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    require_protocol: true,
+    validate: {
+      validator: (v) => isUrl(v),
+      message: 'Неправильный формат ссылки',
+    },
+  },
 });
-
 
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
-      
       if (!user) {
-        console.log(user);
-            throw new IncorrectAuthError('Неправильные почта или пароль');
+        throw new IncorrectAuthError('Неправильные почта или пароль');
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {

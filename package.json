@@ -13,7 +13,7 @@
     "url": "git+https://github.com/AleksandraSamsonovaD/express-mesto.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "AleksandraSamsonovaD",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/AleksandraSamsonovaD/express-mesto/issues"
@@ -24,9 +24,6 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "celebrate": "^15.0.0",
-    "eslint": "^7.32.0",
-    "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.24.2",
     "express": "^4.17.1",
     "joi": "^17.4.2",
     "jsonwebtoken": "^8.5.1",
@@ -34,6 +31,9 @@
     "validator": "^13.6.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.12"
+    "nodemon": "^2.0.12",
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.24.2"
   }
 }

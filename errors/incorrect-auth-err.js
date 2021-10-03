@@ -1,9 +1,9 @@
 class IncorrectAuthError extends Error {
-    constructor(message) {
-      super(message);
-      this.statusCode = 401;
-      this.name = 'IncorrectAuthError'
-    }
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+    this.name = 'IncorrectAuthError';
   }
-  
-  module.exports = IncorrectAuthError; 
+}
+
+module.exports = IncorrectAuthError;
