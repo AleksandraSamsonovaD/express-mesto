@@ -7,6 +7,7 @@ const { celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const IncorrectDataError = require('./errors/incorrect-data-err');
+const NotFoundError = require('./errors/not-found-err');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -38,9 +39,13 @@ app.post('/signup', celebrate({
 app.use('/users', auth, require('./routes/users'));
 app.use('/cards', auth, require('./routes/cards'));
 
+app.use('*', () => {
+  throw new NotFoundError('Страница не найдена');
+});
+
 app.use(errors());
-app.use((err, req, res) => {
-  if (err.name === 'Bad Request') {
+app.use((err, req, res, next) => {
+  if (err.name === 'Bad Request' || err.error === 'Bad Request') {
     err = new IncorrectDataError(err.validation.message);
   }
   const { statusCode = 500, message } = err;
@@ -51,6 +56,7 @@ app.use((err, req, res) => {
         ? 'На сервере произошла ошибка'
         : message,
     });
+  next();
 });
 
 app.listen(PORT, 'localhost', () => {

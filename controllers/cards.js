@@ -44,7 +44,7 @@ const likeCard = (req, res, next) => {
 const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } }, // убрать _id из массива
+    { $pull: { likes: req.user.id } }, // убрать _id из массива
     { new: true },
   )
     .then((card) => {
@@ -56,7 +56,11 @@ const dislikeCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
-      if (!card) { throw new NotFoundError('Карточка не найдены'); } else if (req.user.userId !== card.owner.userId) { throw new DeleteError('Карточка создана не вами'); } else {
+      if (!card) {
+        throw new NotFoundError('Карточка не найдены');
+      } else if (req.user.id !== card.owner.toString()) {
+        throw new DeleteError('Карточка создана не вами');
+      } else {
         Card.findByIdAndRemove(
           req.params.cardId,
         )
