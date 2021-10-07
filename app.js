@@ -6,6 +6,7 @@ const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const IncorrectDataError = require('./errors/incorrect-data-err');
 const NotFoundError = require('./errors/not-found-err');
 
@@ -19,6 +20,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
+app.use(requestLogger);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -42,6 +45,8 @@ app.use('/cards', auth, require('./routes/cards'));
 app.use('*', () => {
   throw new NotFoundError('Страница не найдена');
 });
+
+app.use(errorLogger);
 
 app.use(errors());
 app.use((err, req, res, next) => {
