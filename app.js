@@ -64,5 +64,6 @@ app.use((err, req, res, next) => {
   next();
 });
 
-app.listen(PORT, 'localhost', () => {
+app.listen(PORT, () => {
+  console.log(`I'm runing!!! Port ${PORT}`);
 });
