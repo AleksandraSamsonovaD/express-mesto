@@ -23,13 +23,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(requestLogger);
 
-app.post('/signin', celebrate({
+app.post('/api/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), login);
-app.post('/signup', celebrate({
+app.post('/api/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
@@ -39,8 +39,8 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 // auth проверяет авторизацию, в headers {authorization: "Bearer token_users"}
-app.use('/users', auth, require('./routes/users'));
-app.use('/cards', auth, require('./routes/cards'));
+app.use('/api/users', auth, require('./routes/users'));
+app.use('/api/cards', auth, require('./routes/cards'));
 
 app.use('*', () => {
   throw new NotFoundError('Страница не найдена');
