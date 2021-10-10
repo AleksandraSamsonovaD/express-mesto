@@ -24,6 +24,12 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use(requestLogger);
 
+app.get('/api/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
 app.post('/api/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -66,5 +72,4 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`I'm runing!!! Port ${PORT}`);
 });
