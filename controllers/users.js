@@ -1,9 +1,8 @@
 /* eslint-disable no-shadow */
+const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-
-const JWT_SECRET = 'f83b7547452099462061734791da57443cc60828de7dcb8f7494eedceb3c889c';
 
 const IncorrectDataError = require('../errors/incorrect-data-err');
 const IncorrectAuthError = require('../errors/incorrect-auth-err');
@@ -104,7 +103,11 @@ const login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
-        token: jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' }),
+        token: jwt.sign(
+          { id: user._id },
+          NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+          { expiresIn: '7d' },
+        ),
       });
     })
     .catch(next);
