@@ -5,12 +5,19 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const IncorrectDataError = require('./errors/incorrect-data-err');
 const NotFoundError = require('./errors/not-found-err');
 
+const validateURL = (value) => {
+  if (!validator.isURL(value, { require_protocol: true })) {
+    throw new IncorrectDataError('Неправильный формат ссылки');
+  }
+  return value;
+};
 const { PORT = 3000 } = process.env;
 const app = express();
 
@@ -42,7 +49,7 @@ app.post('/api/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
     about: Joi.string().min(2).max(30).default('Исследователь'),
-    avatar: Joi.string().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    avatar: Joi.string().custom(validateURL).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
   }),
 }), createUser);
 // auth проверяет авторизацию, в headers {authorization: "Bearer token_users"}

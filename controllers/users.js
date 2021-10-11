@@ -49,7 +49,15 @@ const createUser = (req, res, next) => {
             about,
             avatar,
           }))
-          .then((user) => res.send({ data: user }));
+          .then((user) => res.send({
+            data: {
+              name: user.name,
+              about: user.about,
+              avatar: user.avatar,
+              email: user.email,
+            },
+          }))
+          .catch(next);
       }
     })
     .catch((err) => {
@@ -65,7 +73,7 @@ const createUser = (req, res, next) => {
 
 const updateUser = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user.id, { name, about }, { new: true })
+  User.findByIdAndUpdate(req.user.id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) { throw new NotFoundError('Пользователи не найдены'); } else { res.send({ data: user }); }
     })
@@ -82,7 +90,7 @@ const updateUser = (req, res, next) => {
 
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user.id, { avatar }, { new: true })
+  User.findByIdAndUpdate(req.user.id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) { throw new NotFoundError('Пользователь не найден'); } else { res.send({ data: user }); }
     })

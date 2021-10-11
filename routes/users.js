@@ -1,9 +1,18 @@
 /* eslint-disable no-useless-escape */
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
 const {
   getUsers, getUser, updateUser, updateAvatar, getUserAuth,
 } = require('../controllers/users');
+const IncorrectDataError = require('../errors/incorrect-data-err');
+
+const validateURL = (value) => {
+  if (!validator.isURL(value, { require_protocol: true })) {
+    throw new IncorrectDataError('Неправильный формат ссылки');
+  }
+  return value;
+};
 
 router.get('/', getUsers);
 
@@ -24,7 +33,9 @@ router.patch('/me', celebrate({
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(/^(http|https):\/\/(www\.)?([A-Za-z0-9]*[\-\._~:\/?#\[\]@!$&'\(\)*\+,;=]?)*#?$/),
+    avatar: Joi.string().required().custom(validateURL)
+    // .pattern(/^(http|https):\/\/(www\.)?([A-Za-z0-9]*[\-\._~:\/?#\[\]@!$&'\(\)*\+,;=]?)*#?$/)
+    ,
   }),
 }), updateAvatar);
 
