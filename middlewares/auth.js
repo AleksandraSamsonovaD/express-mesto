@@ -1,4 +1,4 @@
-const { JWT_SECRET = '2f36f2bd49588e8c96b026da2c8bb2d736742ad4ec5811aeebe640005d3404e3' } = process.env;
+const { JWT_SECRET = 'f83b7547452099462061734791da57443cc60828de7dcb8f7494eedceb3c889c' } = process.env;
 const jwt = require('jsonwebtoken');
 const IncorrectAuthError = require('../errors/incorrect-auth-err');
 
