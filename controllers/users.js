@@ -113,7 +113,7 @@ const login = (req, res, next) => {
       res.send({
         token: jwt.sign(
           { id: user._id },
-          NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+          NODE_ENV === 'production' ? JWT_SECRET : '2f36f2bd49588e8c96b026da2c8bb2d736742ad4ec5811aeebe640005d3404e3',
           { expiresIn: '7d' },
         ),
       });
